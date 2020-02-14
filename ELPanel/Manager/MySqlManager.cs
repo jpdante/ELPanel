@@ -16,4 +16,13 @@ namespace ELPanel.Manager {
                     reader.GetInt32(6)
                 ));
 			}
-            return serverInfos.ToArray();        }        public void Dispose() {            GC.SuppressFinalize(this);        }    }}
+            return serverInfos.ToArray();        }		public bool HasSession(string id, MySqlConnection conn) {
+            using (var cmd = new MySqlCommand("SELECT id FROM `sessions` WHERE id = @id;", conn)) {
+                cmd.Parameters.AddWithValue("id", id);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+				if(reader.HasRows) {
+                    return reader.GetString(0).Equals(id);
+				}
+            }
+            return false;
+        }        public void Dispose() {            GC.SuppressFinalize(this);        }    }}

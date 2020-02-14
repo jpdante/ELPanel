@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using ELPanel.Manager;
+using ELPanel.Model;
+using ELPanel.Page;
 using HtcSharp.Core;
 using HtcSharp.Core.Helpers.Http;
 using HtcSharp.Core.Interfaces.Plugin;
@@ -16,6 +18,7 @@ namespace ELPanel {
         public string MySqlString = "";
         public static MySqlManager MySqlManager;
         public static ServerManager ServerManager;
+        public static SessionManager SessionManager;
 
         public void OnLoad() {
             var path = Path.Combine(HtcServer.Context.PluginsPath, "ELPanel.conf");            if (!File.Exists(path)) {
@@ -26,7 +29,8 @@ namespace ELPanel {
                 }, Formatting.Indented));
 			}            var config = IoUtils.GetJsonFile(path);            MySqlString = config.GetValue("MySqlString", StringComparison.CurrentCultureIgnoreCase).Value<string>();
             MySqlManager = new MySqlManager(MySqlString);
-            ServerManager = new ServerManager();        }        public void OnEnable() {            UrlMapper.RegisterPluginPage("api/start", this);
+            ServerManager = new ServerManager();
+            SessionManager = new SessionManager();        }        public void OnEnable() {            UrlMapper.RegisterPluginPage("api/start", this);
             UrlMapper.RegisterPluginPage("api/stop", this);
             UrlMapper.RegisterPluginPage("api/restart", this);
             UrlMapper.RegisterPluginPage("api/kill", this);
@@ -39,7 +43,16 @@ namespace ELPanel {
             UrlMapper.UnRegisterPluginPage("api/restart");
             UrlMapper.UnRegisterPluginPage("api/kill");
             UrlMapper.UnRegisterPluginPage("api/getlog");
-            UrlMapper.UnRegisterPluginPage("api/getstats");        }        public bool OnHttpPageRequest(HtcHttpContext httpContext, string filename) {                        return false;        }        public bool OnHttpExtensionRequest(HtcHttpContext httpContext, string filename, string extension) {            return false;        }
+            UrlMapper.UnRegisterPluginPage("api/getstats");        }        public bool OnHttpPageRequest(HtcHttpContext httpContext, string filename) {
+            var connection = MySqlManager.GetMySqlConnection();
+            Session session = null;			if(httpContext.Request.Cookies.ContainsKey("elpanel-session")) {
+                session = SessionManager.GetSession(httpContext.Request.Cookies["elpanel-session"]);
+            }            switch(filename.ToLower()) {
+                case "":
+					StartServer.OnRequest(httpContext, session, connection);
+                    break;
+            }
+            MySqlManager.CloseMySqlConnection(connection);            return false;        }        public bool OnHttpExtensionRequest(HtcHttpContext httpContext, string filename, string extension) {            return false;        }
 
     }
 }
