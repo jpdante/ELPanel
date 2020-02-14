@@ -21,5 +21,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Model\IPage.cs" />
+    <Compile Remove="Page\StartServer %286th copy%29.cs" />
   </ItemGroup>
 </Project>

@@ -48,8 +48,23 @@ namespace ELPanel {
             Session session = null;			if(httpContext.Request.Cookies.ContainsKey("elpanel-session")) {
                 session = SessionManager.GetSession(httpContext.Request.Cookies["elpanel-session"]);
             }            switch(filename.ToLower()) {
-                case "":
+                case "api/start":
 					StartServer.OnRequest(httpContext, session, connection);
+                    break;
+                case "api/stop":
+                    StopServer.OnRequest(httpContext, session, connection);
+                    break;
+                case "api/restart":
+                    RestartServer.OnRequest(httpContext, session, connection);
+                    break;
+                case "api/kill":
+                    KillServer.OnRequest(httpContext, session, connection);
+                    break;
+                case "api/getlog":
+                    GetServerLog.OnRequest(httpContext, session, connection);
+                    break;
+                case "api/getstats":
+                    GetServerStatus.OnRequest(httpContext, session, connection);
                     break;
             }
             MySqlManager.CloseMySqlConnection(connection);            return false;        }        public bool OnHttpExtensionRequest(HtcHttpContext httpContext, string filename, string extension) {            return false;        }
