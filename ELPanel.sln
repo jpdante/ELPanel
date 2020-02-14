@@ -1,0 +1,17 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELPanel", "ELPanel\ELPanel.csproj", "{A12DF192-755F-444E-8EF7-46882DBCFC77}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A12DF192-755F-444E-8EF7-46882DBCFC77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12DF192-755F-444E-8EF7-46882DBCFC77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12DF192-755F-444E-8EF7-46882DBCFC77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12DF192-755F-444E-8EF7-46882DBCFC77}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
