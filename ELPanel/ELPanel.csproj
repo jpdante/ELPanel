@@ -3,12 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="HtcSharp.Core">
-      <HintPath>..\..\..\Desktop\OSX-x64\HtcSharp.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <ItemGroup>
     <Folder Include="Model\" />
     <Folder Include="Manager\" />
@@ -22,5 +16,10 @@
   <ItemGroup>
     <Compile Remove="Model\IPage.cs" />
     <Compile Remove="Page\StartServer %286th copy%29.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="HtcSharp.Core">
+      <HintPath>..\..\HtcSharp\HtcSharp.Core\bin\Debug\HtcSharp.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
