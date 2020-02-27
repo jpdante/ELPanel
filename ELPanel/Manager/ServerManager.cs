@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ELPanel.Manager {
 	public class ServerManager {
 
-		private Dictionary<int, Server> servers;
+		private readonly Dictionary<int, Server> _servers;
 
 		public ServerManager() {
-			servers = new Dictionary<int, Server>();
+			_servers = new Dictionary<int, Server>();
 		}
 
-		public void LoadServers() {
-			servers.Clear();
-			var connection = HtcPlugin.MySqlManager.GetMySqlConnection();
-			var serverInfos = HtcPlugin.MySqlManager.GetServers(connection);
-			HtcPlugin.MySqlManager.CloseMySqlConnection(connection);
+		public async Task LoadServers() {
+			_servers.Clear();
+			var connection = await HtcPlugin.MySqlManager.GetMySqlConnection();
+			ServerInfo[] serverInfos = await HtcPlugin.MySqlManager.GetServers(connection);
+			await HtcPlugin.MySqlManager.CloseMySqlConnection(connection);
 			foreach(var serverInfo in serverInfos) {
-				servers.Add(serverInfo.ServerID, new Server(serverInfo));
+				_servers.Add(serverInfo.ServerID, new Server(serverInfo));
 			}
 		}
 
 		public Server GetServer(int serverID) {
-			if(servers.TryGetValue(serverID, out var value)) {
-				return value;
-			}
-			return null;
-		}
+            return _servers.TryGetValue(serverID, out var value) ? value : null;
+        }
 	}
 }

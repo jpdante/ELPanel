@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ELPanel.Model;
-using HtcSharp.Core.Models.Http;
+using HtcSharp.HttpModule.Http.Abstractions;
 using MySql.Data.MySqlClient;
 
 namespace ELPanel.Page {
 	public static class GetServerStatus {
 
-		public static void OnRequest(HtcHttpContext httpContext, Session session) {
+		public static async Task OnRequest(HttpContext httpContext, Session session) {
 			
 		}
 

@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ELPanel": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\jpdante\\Documents\\GitHub\\HtcSharp\\HtcSharp.Server\\bin\\Debug\\HtcSharp.Server.exe",
+      "workingDirectory": "C:\\Users\\jpdante\\Documents\\GitHub\\HtcSharp\\HtcSharp.Server\\bin\\Debug"
+    }
+  }
+}
