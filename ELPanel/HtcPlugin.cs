@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ELPanel.Manager;
 using ELPanel.Model;
 using ELPanel.Page;
+using ELPanel.Util;
 using HtcSharp.Core;
 using HtcSharp.Core.Logging.Abstractions;
 using HtcSharp.Core.Plugin;
@@ -24,8 +25,10 @@ namespace ELPanel {
         public static MySqlManager MySqlManager;
         public static ServerManager ServerManager;
         public static SessionManager SessionManager;
+        public static ILogger Logger;
 
         public Task Load(PluginServerContext pluginServerContext, ILogger logger) {
+            Logger = logger;
             string path = Path.Combine(pluginServerContext.PluginsPath, "ELPanel.conf");
             if (!File.Exists(path)) {
                 using var fileStream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
@@ -36,9 +39,10 @@ namespace ELPanel {
             }
             var config = JsonUtils.GetJsonFile(path);
             MySqlString = config.GetValue("MySqlString", StringComparison.CurrentCultureIgnoreCase).Value<string>();
-            MySqlManager = new MySqlManager(MySqlString, logger);
+            MySqlManager = new MySqlManager(MySqlString);
             ServerManager = new ServerManager();
             SessionManager = new SessionManager();
+            SessionManager.AddSession("86b13566-91ff-4ae3-b92e-aa1887b87574");
             return Task.CompletedTask;
         }
 
@@ -48,6 +52,8 @@ namespace ELPanel {
             UrlMapper.RegisterPluginPage("/api/kill", this);
             UrlMapper.RegisterPluginPage("/api/getlog", this);
             UrlMapper.RegisterPluginPage("/api/getstats", this);
+            UrlMapper.RegisterPluginPage("/api/getserver", this);
+            UrlMapper.RegisterPluginPage("/api/getservers", this);
             UrlMapper.RegisterPluginPage("/api/login", this);
             await ServerManager.LoadServers();
             SessionManager.Start();
@@ -58,6 +64,8 @@ namespace ELPanel {
             UrlMapper.UnRegisterPluginPage("/api/kill");
             UrlMapper.UnRegisterPluginPage("/api/getlog");
             UrlMapper.UnRegisterPluginPage("/api/getstats");
+            UrlMapper.UnRegisterPluginPage("/api/getserver");
+            UrlMapper.UnRegisterPluginPage("/api/getservers");
             UrlMapper.UnRegisterPluginPage("/api/login");
             SessionManager.Stop();
             return Task.CompletedTask;
@@ -69,11 +77,10 @@ namespace ELPanel {
 
         public async Task OnHttpPageRequest(HttpContext httpContext, string filename) {
             Session session = null;
-            if (httpContext.Request.Cookies.TryGetValue("elpanel-session", out string value)) {
-                if (SessionManager.HasSession(value)) {
-                    session = SessionManager.GetSession(value);
-                } else {
-                    httpContext.Response.Cookies.Delete("elpanel-session");
+            if (httpContext.Request.Headers.TryGetValue("Authorization", out var value)) {
+                string[] data = value[0].Split(" ", 2);
+                if (data.Length == 2 && data[0].Equals("Bearer")) {
+                    session = SessionManager.GetSession(data[1]);
                 }
             }
             switch (filename.ToLower()) {
@@ -95,8 +102,11 @@ namespace ELPanel {
                 case "/api/getstats":
                     await GetServerStatus.OnRequest(httpContext, session);
                     break;
+                case "/api/getservers":
+                    await GetServers.OnRequest(httpContext, session);
+                    break;
                 case "/api/login":
-                    await Login.OnRequest(httpContext, session);
+                    await Login.OnRequest(httpContext);
                     break;
             }
         }

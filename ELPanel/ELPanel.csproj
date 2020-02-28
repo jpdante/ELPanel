@@ -9,7 +9,6 @@
     <OutputPath></OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Model\" />
     <Folder Include="Manager\" />
     <Folder Include="Util\" />
   </ItemGroup>

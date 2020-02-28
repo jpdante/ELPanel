@@ -2,39 +2,49 @@
 using System.Threading.Tasks;
 using ELPanel.Model;
 using ELPanel.Util;
+using HtcSharp.Core.Logging.Abstractions;
 using HtcSharp.Core.Utils;
 using HtcSharp.HttpModule.Http.Abstractions;
 using HtcSharp.HttpModule.Routing;
-using MySql.Data.MySqlClient;
 
 namespace ELPanel.Page {
     public static class Login {
 
-        public static async Task OnRequest(HttpContext httpContext, Session session) {
-            if (session != null) {
-                httpContext.Response.StatusCode = 403;
-                httpContext.Response.ContentType = ContentType.JSON.ToValue();
-                await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 1, message = "You cannot log in if you are already logged in." } ));
-                return;
-            }
-            if (httpContext.Request.Form.TryGetValue("email", out var email) && httpContext.Request.Form.TryGetValue("password", out var password)) {
-                var connection = await HtcPlugin.MySqlManager.GetMySqlConnection();
-                if (await HtcPlugin.MySqlManager.CheckLogin(email, EncryptionUtils.ComputeSha512Hash(password), connection)) {
-                    var id = Guid.NewGuid().ToString();
-                    httpContext.Response.Cookies.Append("elpanel-session", id);
-                    HtcPlugin.SessionManager.AddSession(id);
-                    httpContext.Response.StatusCode = 200;
-                    httpContext.Response.ContentType = ContentType.JSON.ToValue();
-                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = true }));
-                } else {
-                    httpContext.Response.StatusCode = 403;
-                    httpContext.Response.ContentType = ContentType.JSON.ToValue();
-                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 3, message = "Wrong Email or Password!" }));
+        public static async Task OnRequest(HttpContext httpContext) {
+            try {
+                httpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                httpContext.Response.Headers.Add("Access-Control-Allow-Methods", "*");
+                httpContext.Response.Headers.Add("Access-Control-Allow-Headers", "*");
+                if (string.IsNullOrEmpty(httpContext.Request.ContentType) || !httpContext.Request.ContentType.Equals(ContentType.JSON.ToValue())) {
+                    httpContext.Response.ContentType = ContentType.TEXT.ToValue();
+                    await httpContext.Response.WriteAsync("Incorrect content type!");
+                    return;
                 }
-            } else {
-                httpContext.Response.StatusCode = 403;
                 httpContext.Response.ContentType = ContentType.JSON.ToValue();
-                await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 2, message = "Fields are missing!" }));
+                var data = await new JsonData().Load(httpContext);
+                if (data.TryGetValue("email", out string email) && data.TryGetValue("password", out string password)) {
+                    var connection = await HtcPlugin.MySqlManager.GetMySqlConnection();
+                    if (await HtcPlugin.MySqlManager.CheckLogin(email, EncryptionUtils.ComputeSha512Hash(password), connection)) {
+                        var id = Guid.NewGuid().ToString();
+                        //httpContext.Response.Cookies.Append("elpanel-session", id);
+                        HtcPlugin.SessionManager.AddSession(id);
+                        httpContext.Response.StatusCode = 200;
+                        await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = true, token = id }));
+                    } else {
+                        httpContext.Response.StatusCode = 200;
+                        await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 3, message = "Wrong Email or Password!" }));
+                    }
+                } else {
+                    httpContext.Response.StatusCode = 200;
+                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 2, message = "Fields are missing!" }));
+                }
+            } catch (Exception ex) {
+                if (!httpContext.Response.HasStarted) {
+                    httpContext.Response.ContentType = ContentType.TEXT.ToValue();
+                    httpContext.Response.StatusCode = 503;
+                    await httpContext.Response.WriteAsync("Failed to parse json request data.");
+                }
+                HtcPlugin.Logger.LogTrace("[Login Exception]", ex);
             }
         }
 

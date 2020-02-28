@@ -4,16 +4,16 @@ namespace ELPanel.Model {
     public class Session {
 
         public string Id { get; }
-        private int _expiration;
+        public int Expiration { get; private set; }
 
         public Session(string id) {
             Id = id;
-            _expiration = 3600;
+            Expiration = 3600;
         }
 
         public bool IsExpired() {
-            _expiration--;
-            return _expiration <= 0;
+            Expiration--;
+            return Expiration <= 0;
         }
     }
 }

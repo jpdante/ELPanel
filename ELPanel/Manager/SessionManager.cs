@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 using ELPanel.Model;
+using HtcSharp.Core.Extensions;
+using HtcSharp.Core.Logging.Abstractions;
+using HtcSharp.Core.Utils;
 
 namespace ELPanel.Manager {
     public class SessionManager {
@@ -35,7 +38,9 @@ namespace ELPanel.Manager {
         }
 
         public void AddSession(string id) {
-            _sessions.Add(id, new Session(id));
+            var session = new Session(id);
+            HtcPlugin.Logger.DumpLog(LogLevel.Info, session, null);
+            _sessions.Add(id, session);
         }
 
         public bool HasSession(string id) {

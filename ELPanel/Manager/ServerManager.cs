@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 
 namespace ELPanel.Manager {
@@ -21,8 +22,13 @@ namespace ELPanel.Manager {
 			}
 		}
 
-		public Server GetServer(int serverID) {
-            return _servers.TryGetValue(serverID, out var value) ? value : null;
+		public Server GetServer(int serverId) {
+            return _servers.TryGetValue(serverId, out var value) ? value : null;
+        }
+
+        public ImmutableArray<Server> GetServers() {
+            return _servers.Values.ToImmutableArray();
+
         }
 	}
 }
