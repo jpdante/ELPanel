@@ -1,5 +1,4 @@
-﻿using System;
-namespace ELPanel {
+﻿namespace ELPanel.Model {
 	public class ServerInfo {
 
 		public int ServerID { get; private set; }

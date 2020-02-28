@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ELPanel.Model;
+using ELPanel.Util;
 using HtcSharp.Core.Logging.Abstractions;
 using HtcSharp.Core.Utils;
 using HtcSharp.HttpModule.Http.Abstractions;

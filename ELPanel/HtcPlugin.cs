@@ -105,6 +105,9 @@ namespace ELPanel {
                 case "/api/getservers":
                     await GetServers.OnRequest(httpContext, session);
                     break;
+                case "/api/getserver":
+                    await GetServer.OnRequest(httpContext, session);
+                    break;
                 case "/api/login":
                     await Login.OnRequest(httpContext);
                     break;

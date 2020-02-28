@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace ELPanel {
+namespace ELPanel.Model {
 	public class Server {
 
 		public readonly ServerInfo ServerInfo;
@@ -56,8 +56,8 @@ namespace ELPanel {
 			_serverProcess.OutputDataReceived += ServerProcess_OutputDataReceived;
 			_serverProcess.Start();
 			if (File.Exists(_serverPidPath)) File.Delete(_serverPidPath);
-			File.WriteAllText(_serverPidPath, $"{_serverProcess.Id}");
-		}
+            await File.WriteAllTextAsync(_serverPidPath, $"{_serverProcess.Id}");
+        }
 
 		public async Task Stop() {
 			if (_serverProcess == null) return;
@@ -84,21 +84,18 @@ namespace ELPanel {
 		}
 
 		public void CheckStatus() {
-			if (_serverProcess == null) {
-				if (File.Exists(_serverPidPath)) {
-					var data = File.ReadAllText(_serverPidPath);
-					if(int.TryParse(data, out int pid)) {
-						_serverProcess = Process.GetProcessById(pid);
-						if(_serverProcess == null) {
-							File.Delete(_serverPidPath);
-							return;
-						}
-						_serverProcess.ErrorDataReceived += ServerProcess_ErrorDataReceived;
-						_serverProcess.OutputDataReceived += ServerProcess_OutputDataReceived;
-					}
-				}
-			}
-		}
+            if (_serverProcess != null) return;
+            if (!File.Exists(_serverPidPath)) return;
+            string data = File.ReadAllText(_serverPidPath);
+            if (!int.TryParse(data, out int pid)) return;
+            _serverProcess = Process.GetProcessById(pid);
+            if(_serverProcess == null) {
+                File.Delete(_serverPidPath);
+                return;
+            }
+            _serverProcess.ErrorDataReceived += ServerProcess_ErrorDataReceived;
+            _serverProcess.OutputDataReceived += ServerProcess_OutputDataReceived;
+        }
 
 		public void SendCommand(string command) {
 			if (_serverProcess == null) return;
