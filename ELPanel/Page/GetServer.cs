@@ -37,7 +37,10 @@ namespace ELPanel.Page {
                             server = new {
                                 id = server.ServerInfo.ServerID,
                                 name = server.ServerInfo.ServerName,
-                                arguments = server.ServerInfo.Arguments,
+                                arguments = server.ServerInfo.Arguments
+                                    .Replace("%MinMemory%", server.ServerInfo.MinMemory.ToString())
+                                    .Replace("%MaxMemory%", server.ServerInfo.MaxMemory.ToString())
+                                    .Replace("%FileName%", server.ServerInfo.FileName),
                                 filename = server.ServerInfo.FileName,
                                 maxmemory = server.ServerInfo.MaxMemory,
                                 minmemory = server.ServerInfo.MinMemory,
@@ -57,7 +60,7 @@ namespace ELPanel.Page {
                     httpContext.Response.StatusCode = 503;
                     await httpContext.Response.WriteAsync("Failed to parse json request data.");
                 }
-                HtcPlugin.Logger.LogTrace("[Login Exception]", ex);
+                HtcPlugin.Logger.LogTrace("[Server Exception]", ex);
             }
         }
     }

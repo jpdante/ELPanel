@@ -35,7 +35,7 @@ namespace ELPanel.Page {
                     httpContext.Response.StatusCode = 503;
                     await httpContext.Response.WriteAsync("Failed to parse json request data.");
                 }
-                HtcPlugin.Logger.LogTrace("[Login Exception]", ex);
+                HtcPlugin.Logger.LogTrace("[Servers Exception]", ex);
             }
         }
     }

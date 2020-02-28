@@ -8,7 +8,7 @@ using HtcSharp.HttpModule.Routing;
 using MySql.Data.MySqlClient;
 
 namespace ELPanel.Page {
-	public static class GetServerStatus {
+	public static class SendCommand {
 
         public static async Task OnRequest(HttpContext httpContext, Session session) {
             try {
@@ -23,29 +23,19 @@ namespace ELPanel.Page {
                 }
                 httpContext.Response.ContentType = ContentType.JSON.ToValue();
                 var data = await new JsonData().Load(httpContext);
-                if (data.TryGetValue("id", out string idRaw) && int.TryParse(idRaw, out int id)) {
+                if (data.TryGetValue("id", out string idRaw) && int.TryParse(idRaw, out int id) && data.TryGetValue("cmd", out string cmd)) {
                     var server = HtcPlugin.ServerManager.GetServer(id);
                     if (server == null) {
                         httpContext.Response.StatusCode = 200;
                         await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, message = "Invalid server id." }));
                         return;
                     }
+                    await server.SendCommand(cmd);
                     httpContext.Response.StatusCode = 200;
-                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(
-                        new {
-                            success = true,
-                            info = new {
-                                cpu = 0,
-                                ram = 0,
-                                online = server.Active,
-                                count = server.PlayersOnline,
-                                max = server.MaxPlayers,
-                                log = server.GetLog()
-                            }
-                        }));
+                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = true }));
                 } else {
                     httpContext.Response.StatusCode = 200;
-                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 2, message = "Fields are missin.!" }));
+                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 2, message = "Fields are missing." }));
                 }
             } catch (Exception ex) {
                 if (!httpContext.Response.HasStarted) {
@@ -56,6 +46,5 @@ namespace ELPanel.Page {
                 HtcPlugin.Logger.LogTrace("[ServerStatus Exception]", ex);
             }
         }
-
-	}
+    }
 }

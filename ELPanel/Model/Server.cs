@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using HtcSharp.Core.Logging.Abstractions;
 
 namespace ELPanel.Model {
 	public class Server {
@@ -19,11 +21,12 @@ namespace ELPanel.Model {
 
 		public Server(ServerInfo serverInfo) {
 			this.ServerInfo = serverInfo;
-			var arguments = serverInfo.Arguments
+			string arguments = serverInfo.Arguments
 				.Replace("%MinMemory%", serverInfo.MinMemory.ToString())
-				.Replace("%MaxMemory%", serverInfo.MaxMemory.ToString());
+				.Replace("%MaxMemory%", serverInfo.MaxMemory.ToString())
+                .Replace("%FileName%", serverInfo.FileName);
 			_serverStartInfo = new ProcessStartInfo() {
-				FileName = serverInfo.FileName,
+				FileName = @"C:\Program Files\Java\jre1.8.0_241\bin\javaw.exe",
 				WorkingDirectory = serverInfo.WorkingDirectory,
 				Arguments = arguments,
 				RedirectStandardError = true,
@@ -31,21 +34,21 @@ namespace ELPanel.Model {
 				RedirectStandardOutput = true,
 			};
 			_serverLog = new List<string>();
-			_serverPidPath = Path.Combine(serverInfo.WorkingDirectory, "Process.pid");
+			_serverPidPath = Path.Combine(serverInfo.WorkingDirectory, "process.pid");
 		}
 
 		private void ServerProcess_OutputDataReceived(object sender, DataReceivedEventArgs e) {
 			lock(_serverLog) {
-				if (_serverLog.Count == 100) _serverLog.RemoveAt(99);
+				if (_serverLog.Count == 50) _serverLog.RemoveAt(49);
 				_serverLog.Insert(0, e.Data);
-			}
+            }
 		}
 
 		private void ServerProcess_ErrorDataReceived(object sender, DataReceivedEventArgs e) {
 			lock (_serverLog) {
-				if (_serverLog.Count == 100) _serverLog.RemoveAt(99);
+				if (_serverLog.Count == 50) _serverLog.RemoveAt(49);
 				_serverLog.Insert(0, e.Data);
-			}
+            }
 		}
 
 		public async Task Start() {
@@ -55,13 +58,16 @@ namespace ELPanel.Model {
 			_serverProcess.ErrorDataReceived += ServerProcess_ErrorDataReceived;
 			_serverProcess.OutputDataReceived += ServerProcess_OutputDataReceived;
 			_serverProcess.Start();
+            Active = true;
+			_serverProcess.BeginOutputReadLine();
+            _serverProcess.BeginErrorReadLine();
 			if (File.Exists(_serverPidPath)) File.Delete(_serverPidPath);
             await File.WriteAllTextAsync(_serverPidPath, $"{_serverProcess.Id}");
         }
 
 		public async Task Stop() {
 			if (_serverProcess == null) return;
-			SendCommand("stop");
+			await SendCommand("stop");
 			while (!_serverProcess.HasExited) {
 				await Task.Delay(100);
 			}
@@ -76,7 +82,7 @@ namespace ELPanel.Model {
 
 		public async Task Kill() {
 			if (_serverProcess == null) return;
-			_serverProcess.Kill();
+			_serverProcess.Kill(true);
 			while (!_serverProcess.HasExited) {
 				await Task.Delay(100);
 			}
@@ -84,30 +90,32 @@ namespace ELPanel.Model {
 		}
 
 		public void CheckStatus() {
-            if (_serverProcess != null) return;
+            if (_serverProcess != null) {
+                Active = !_serverProcess.HasExited;
+                return;
+            }
             if (!File.Exists(_serverPidPath)) return;
             string data = File.ReadAllText(_serverPidPath);
             if (!int.TryParse(data, out int pid)) return;
-            _serverProcess = Process.GetProcessById(pid);
-            if(_serverProcess == null) {
-                File.Delete(_serverPidPath);
-                return;
+            try {
+                var process = Process.GetProcessById(pid);
+                process.Kill(true);
+            } catch {
+                // ignored
             }
-            _serverProcess.ErrorDataReceived += ServerProcess_ErrorDataReceived;
-            _serverProcess.OutputDataReceived += ServerProcess_OutputDataReceived;
+            if (_serverProcess != null) return;
+            File.Delete(_serverPidPath);
         }
 
-		public void SendCommand(string command) {
-			if (_serverProcess == null) return;
-			_serverProcess.StandardInput.WriteLine(command);
+		public async Task SendCommand(string command) {
+            if (_serverProcess == null) return;
+            await _serverProcess.StandardInput.WriteAsync($"{command}{Environment.NewLine}");
 		}
 
 		public string GetLog() {
-			string log = string.Empty;
-			foreach(string data in _serverLog) {
-				log += data + Environment.NewLine;
-			}
-			return log;
-		}
+            lock (_serverLog) {
+                return _serverLog.Aggregate(string.Empty, (current, data) => current + (data + Environment.NewLine));
+            }
+        }
 	}
 }
