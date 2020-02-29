@@ -26,7 +26,7 @@ namespace ELPanel.Model {
 				.Replace("%MaxMemory%", serverInfo.MaxMemory.ToString())
                 .Replace("%FileName%", serverInfo.FileName);
 			_serverStartInfo = new ProcessStartInfo() {
-				FileName = @"C:\Program Files\Java\jre1.8.0_241\bin\javaw.exe",
+				FileName = @"/usr/bin/java",
 				WorkingDirectory = serverInfo.WorkingDirectory,
 				Arguments = arguments,
 				RedirectStandardError = true,
