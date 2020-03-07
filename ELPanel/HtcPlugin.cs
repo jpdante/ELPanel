@@ -50,9 +50,9 @@ namespace ELPanel {
             UrlMapper.RegisterPluginPage("/api/stop", this);
             UrlMapper.RegisterPluginPage("/api/restart", this);
             UrlMapper.RegisterPluginPage("/api/kill", this);
-            UrlMapper.RegisterPluginPage("/api/getstats", this);
-            UrlMapper.RegisterPluginPage("/api/getserver", this);
-            UrlMapper.RegisterPluginPage("/api/getservers", this);
+            UrlMapper.RegisterPluginPage("/api/stats", this);
+            UrlMapper.RegisterPluginPage("/api/server", this);
+            UrlMapper.RegisterPluginPage("/api/servers", this);
             UrlMapper.RegisterPluginPage("/api/command", this);
             UrlMapper.RegisterPluginPage("/api/login", this);
             await ServerManager.LoadServers();
@@ -63,9 +63,9 @@ namespace ELPanel {
             UrlMapper.UnRegisterPluginPage("/api/stop");
             UrlMapper.UnRegisterPluginPage("/api/restart");
             UrlMapper.UnRegisterPluginPage("/api/kill");
-            UrlMapper.UnRegisterPluginPage("/api/getstats");
-            UrlMapper.UnRegisterPluginPage("/api/getserver");
-            UrlMapper.UnRegisterPluginPage("/api/getservers");
+            UrlMapper.UnRegisterPluginPage("/api/stats");
+            UrlMapper.UnRegisterPluginPage("/api/server");
+            UrlMapper.UnRegisterPluginPage("/api/servers");
             UrlMapper.UnRegisterPluginPage("/api/command");
             UrlMapper.UnRegisterPluginPage("/api/login");
             SessionManager.Stop();
@@ -98,13 +98,13 @@ namespace ELPanel {
                 case "/api/kill":
                     await KillServer.OnRequest(httpContext, session);
                     break;
-                case "/api/getstats":
+                case "/api/stats":
                     await GetServerStatus.OnRequest(httpContext, session);
                     break;
-                case "/api/getservers":
+                case "/api/servers":
                     await GetServers.OnRequest(httpContext, session);
                     break;
-                case "/api/getserver":
+                case "/api/server":
                     await GetServer.OnRequest(httpContext, session);
                     break;
                 case "/api/command":
