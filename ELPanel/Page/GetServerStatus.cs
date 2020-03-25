@@ -45,7 +45,7 @@ namespace ELPanel.Page {
                         }));
                 } else {
                     httpContext.Response.StatusCode = 200;
-                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 2, message = "Fields are missin.!" }));
+                    await httpContext.Response.WriteAsync(JsonUtils.SerializeObject(new { success = false, error = 2, message = "Fields are missing.!" }));
                 }
             } catch (Exception ex) {
                 if (!httpContext.Response.HasStarted) {
